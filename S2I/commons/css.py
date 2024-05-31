@@ -213,3 +213,104 @@ div.svelte-1030q2h{
     border-width: none;
 }
 """
+
+scripts = """
+async () => {
+    globalThis.theSketchDownloadFunction = () => {
+        console.log("test")
+        var link = document.createElement("a");
+        dataUri = document.getElementById('download_sketch').href
+        link.setAttribute("href", dataUri)
+        link.setAttribute("download", "sketch.png")
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+        document.body.removeChild(link); // Clean up
+
+        // also call the output download function
+        theOutputDownloadFunction();
+      return false
+    }
+
+    globalThis.theOutputDownloadFunction = () => {
+        console.log("test output download function")
+        var link = document.createElement("a");
+        dataUri = document.getElementById('download_output').href
+        link.setAttribute("href", dataUri);
+        link.setAttribute("download", "output.png");
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+        document.body.removeChild(link); // Clean up
+      return false
+    }
+
+    globalThis.UNDO_SKETCH_FUNCTION = () => {
+        console.log("undo sketch function")
+        var button_undo = document.querySelector('#input_image > div.image-container.svelte-p3y7hu > div.svelte-s6ybro > button:nth-child(1)');
+        // Create a new 'click' event
+        var event = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        button_undo.dispatchEvent(event);
+    }
+
+    globalThis.DELETE_SKETCH_FUNCTION = () => {
+        console.log("delete sketch function")
+        var button_del = document.querySelector('#input_image > div.image-container.svelte-p3y7hu > div.svelte-s6ybro > button:nth-child(2)');
+        // Create a new 'click' event
+        var event = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        button_del.dispatchEvent(event);
+    }
+
+    globalThis.togglePencil = () => {
+        el_pencil = document.getElementById('my-toggle-pencil');
+        el_pencil.classList.toggle('clicked');
+        // simulate a click on the gradio button
+        btn_gradio = document.querySelector("#cb-line > label > input");
+        var event = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        btn_gradio.dispatchEvent(event);
+        if (el_pencil.classList.contains('clicked')) {
+            document.getElementById('my-toggle-eraser').classList.remove('clicked');
+            document.getElementById('my-div-pencil').style.backgroundColor = "gray";
+            document.getElementById('my-div-eraser').style.backgroundColor = "white";
+        }
+        else {
+            document.getElementById('my-toggle-eraser').classList.add('clicked');
+            document.getElementById('my-div-pencil').style.backgroundColor = "white";
+            document.getElementById('my-div-eraser').style.backgroundColor = "gray";
+        }
+    }
+
+    globalThis.toggleEraser = () => {
+        element = document.getElementById('my-toggle-eraser');
+        element.classList.toggle('clicked');
+        // simulate a click on the gradio button
+        btn_gradio = document.querySelector("#cb-eraser > label > input");
+        var event = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        btn_gradio.dispatchEvent(event);
+        if (element.classList.contains('clicked')) {
+            document.getElementById('my-toggle-pencil').classList.remove('clicked');
+            document.getElementById('my-div-pencil').style.backgroundColor = "white";
+            document.getElementById('my-div-eraser').style.backgroundColor = "gray";
+        }
+        else {
+            document.getElementById('my-toggle-pencil').classList.add('clicked');
+            document.getElementById('my-div-pencil').style.backgroundColor = "gray";
+            document.getElementById('my-div-eraser').style.backgroundColor = "white";
+        }
+    }
+}
+"""

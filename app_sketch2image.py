@@ -1,6 +1,6 @@
 import gradio as gr
 import random
-from S2I import Sketch2ImageController, css
+from S2I import Sketch2ImageController, css, scripts
 
 
 class Sketch2ImageLaunch(Sketch2ImageController):
@@ -99,6 +99,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                 queue=False,
                 api_name=False,
             ).then(self.update_canvas, [line, eraser], [image])
+            demo.load(None, None, None, _js=scripts)
             randomize_seed.click(
                 lambda x: random.randint(0, self.MAX_SEED),
                 inputs=[],
