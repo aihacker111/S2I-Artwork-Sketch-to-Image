@@ -39,7 +39,7 @@ class PrimaryModel:
         vae.decoder.ignore_skip = False
         return vae
 
-    def from_pretrained(self, sketch2image_ckpt):
+    def from_pretrained(self):
 
         if self.global_tokenizer is None:
             self.global_tokenizer = AutoTokenizer.from_pretrained(self.backbone_diffusion_path, subfolder="tokenizer")
