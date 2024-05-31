@@ -1,6 +1,6 @@
 import gradio as gr
 import random
-from S2I import Sketch2ImageController
+from S2I import Sketch2ImageController, css
 
 
 class Sketch2ImageLaunch(Sketch2ImageController):
@@ -8,7 +8,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
         super().__init__(gr)
 
     def launch(self):
-        with gr.Blocks(css="styles.css") as demo:
+        with gr.Blocks(css=css) as demo:
             line = gr.Checkbox(label="line", value=False, elem_id="cb-line")
             eraser = gr.Checkbox(label="eraser", value=False, elem_id="cb-eraser")
             with gr.Row(elem_id="main_row"):
