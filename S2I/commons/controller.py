@@ -69,9 +69,9 @@ class Sketch2ImageController(SAMController):
             temp_uri = self.pil_image_to_data_uri(ones)
             segment_image = np.array(segment_image)
             sketch = self.automatic_sam2sketch(segment,
-                                                      segment_image,
-                                                      origin_frame,
-                                                      model_type)
+                                               segment_image,
+                                               origin_frame,
+                                               model_type)
             prompt = prompt_template.replace("{prompt}", prompt)
             image_t = F.to_tensor(sketch) > 0.5
 
@@ -85,12 +85,12 @@ class Sketch2ImageController(SAMController):
                 output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise)
 
             output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
-            input_segment_rgb = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(sketch)))
+            input_segment_rgb = Image.fromarray(sketch)
             # input_sketch_uri = self.pil_image_to_data_uri(temp_uri)
             output_image_uri = self.pil_image_to_data_uri(output_pil)
             return (
                 output_pil,
-                self.gr.update(link=input_segment_rgb),
+                input_segment_rgb,
                 self.gr.update(link=temp_uri),
                 self.gr.update(link=output_image_uri),
             )
@@ -116,7 +116,7 @@ class Sketch2ImageController(SAMController):
 
             return (
                 output_pil,
-                self.gr.update(link=temp_uri),
+                ones,
                 self.gr.update(link=input_sketch_uri),
                 self.gr.update(link=output_image_uri),
             )
@@ -124,12 +124,12 @@ class Sketch2ImageController(SAMController):
             ones = Image.new("L", (512, 512), 255)
             temp_uri = self.pil_image_to_data_uri(ones)
             segment_image = np.array(segment_image)
-            segment_image = self.automatic_sam2sketch(segment,
-                                                      segment_image,
-                                                      origin_frame,
-                                                      model_type)
+            sketch = self.automatic_sam2sketch(segment,
+                                               segment_image,
+                                               origin_frame,
+                                               model_type)
             prompt = prompt_template.replace("{prompt}", prompt)
-            image_t = F.to_tensor(segment_image) > 0.5
+            image_t = F.to_tensor(sketch) > 0.5
 
             # Start GPU operations
             c_t = image_t.unsqueeze(0).cuda().float()
@@ -141,16 +141,15 @@ class Sketch2ImageController(SAMController):
                 output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise)
 
             output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
-            input_segment_rgb = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(segment_image)))
+            input_segment_rgb = Image.fromarray(sketch)
             output_image_uri = self.pil_image_to_data_uri(output_pil)
 
             return (
                 output_pil,
-                self.gr.update(link=input_segment_rgb),
+                input_segment_rgb,
                 self.gr.update(link=temp_uri),
                 self.gr.update(link=output_image_uri),
             )
-
 
         # prompt = prompt_template.replace("{prompt}", prompt)
         # # image = image.convert("RGB")
