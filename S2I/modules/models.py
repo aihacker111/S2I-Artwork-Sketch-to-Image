@@ -1,10 +1,9 @@
 import torch
 from diffusers import DDPMScheduler
-from transformers import AutoTokenizer, CLIPTextModel, AutoModel
+from transformers import AutoTokenizer, CLIPTextModel
 from diffusers import AutoencoderKL, UNet2DConditionModel
 from peft import LoraConfig
 from S2I.modules.utils import sc_vae_encoder_fwd, sc_vae_decoder_fwd, download_url
-import os
 
 
 class PrimaryModel:

@@ -45,7 +45,8 @@ def sc_vae_decoder_fwd(self, sample, latent_embeds=None):
 
 
 def download_url():
-    url = "https://huggingface.co/myn0908/sk2ks/resolve/main/model_12001.pkl?download=true"
+    # url = "https://huggingface.co/myn0908/sk2ks/resolve/main/model_12001.pkl?download=true"
+    url = 'https://huggingface.co/myn0908/sk2ks/resolve/main/sketch2image_mixed_weights_16k_steps.pkl?download=true'
     ckpt_folder = 'checkpoints'
     os.makedirs(ckpt_folder, exist_ok=True)
     outf = os.path.join(ckpt_folder, "sketch2image_lora_finetune.pkl")
