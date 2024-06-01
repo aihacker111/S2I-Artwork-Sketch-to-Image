@@ -38,7 +38,7 @@ class Sketch2ImageController(SAMController):
         self.MAX_SEED = np.iinfo(np.int32).max
 
         # Initialize the model once here
-        # self.model = Sketch2Image()
+        self.model = Sketch2Image()
 
     def update_canvas(self, use_line, use_eraser):
         brush_size = 20 if use_eraser else 4
