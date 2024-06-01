@@ -301,4 +301,7 @@ class SAMController:
         edge_detection = cv2.ximgproc.createStructuredEdgeDetection(model_path)
         orimap = edge_detection.computeOrientation(edges)
         edges = edge_detection.edgesNms(edges, orimap)
+        edges = (edges * 255).astype('uint8')
+        edges = 255 - edges
+        edges = np.stack((edges,) * 3, axis=-1)
         return edges
