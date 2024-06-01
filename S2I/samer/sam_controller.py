@@ -58,7 +58,7 @@ class SAMController:
                 total_size = int(response.headers.get('content-length', 0))  # Get file size from headers
                 with tqdm(total=total_size, unit="B", unit_scale=True, desc=f"Downloading {model_type} model") as pbar:
                     with open(model_path, 'wb') as f:
-                        for chunk in response.iter_content(chunk_size=8192):
+                        for chunk in response.iter_content(chunk_size=1024):
                             f.write(chunk)
                             pbar.update(len(chunk))
                 logger.info(f"{model_type} model downloaded.")
@@ -241,6 +241,7 @@ class SAMController:
         self.save_mask(refined_mask, save=True)
         self.refine_mask = refined_mask
         return segment, masked_frame, click_stack, status
+
     @staticmethod
     def normalize_image(image):
         # Normalize the image to the range [0, 1]
@@ -249,6 +250,7 @@ class SAMController:
         image = (image - min_val) / (max_val - min_val)
 
         return image
+
     @staticmethod
     def compute_probability(masks):
         p_max = None
@@ -259,6 +261,21 @@ class SAMController:
             else:
                 p_max = np.maximum(p_max, p)
         return p_max
+    @staticmethod
+    def download_opencv_model(model_url):
+        opencv_model_path = os.path.join(os.getcwd(), 'edges_detection')
+        os.makedirs(opencv_model_path, exist_ok=True)
+        model_path = os.path.join(opencv_model_path, 'edges_detection' + '.yml.gz')
+        response = requests.get(model_url, stream=True)
+        response.raise_for_status()  # Raise an exception for non-2xx status codes
+
+        total_size = int(response.headers.get('content-length', 0))  # Get file size from headers
+        with tqdm(total=total_size, unit="B", unit_scale=True, desc=f"Downloading opencv model") as pbar:
+            with open(model_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    f.write(chunk)
+                    pbar.update(len(chunk))
+        return model_path
 
     def automatic_sam2sketch(self,
                              segment,
@@ -269,19 +286,19 @@ class SAMController:
         _, sam_args = self.is_sam_model(model_type)
         if segment is None or model_type != sam_args['model_type']:
             segment, _, _ = self.init_segment(
-                                    points_per_side=16,
-                                    origin_frame=origin_frame,
-                                    sam_args=sam_args,
-                                    predict_iou_thresh=0.8,
-                                    stability_score_thresh=0.9,
-                                    crop_n_layers=1,
-                                    crop_n_points_downscale_factor=2,
-                                    min_mask_region_area=200)
+                points_per_side=16,
+                origin_frame=origin_frame,
+                sam_args=sam_args,
+                predict_iou_thresh=0.8,
+                stability_score_thresh=0.9,
+                crop_n_layers=1,
+                crop_n_points_downscale_factor=2,
+                min_mask_region_area=200)
+        model_path = self.download_opencv_model(model_url='https://github.com/nipunmanral/Object-Detection-using-OpenCV/raw/master/model.yml.gz')
         masks = segment.automatic_generate_mask(image)
         p_max = self.compute_probability(masks)
         edges = self.normalize_image(p_max)
-        edge_detection = cv2.ximgproc.createStructuredEdgeDetection(
-            '/Users/macbook/Downloads/S2I-Artwork-Sketch-to-Image/model.yml.gz')
+        edge_detection = cv2.ximgproc.createStructuredEdgeDetection(model_path)
         orimap = edge_detection.computeOrientation(edges)
         edges = edge_detection.edgesNms(edges, orimap)
         return edges
