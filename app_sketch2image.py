@@ -11,6 +11,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
         with gr.Blocks(css=css) as demo:
             line = gr.Checkbox(label="line", value=False, elem_id="cb-line")
             eraser = gr.Checkbox(label="eraser", value=False, elem_id="cb-eraser")
+            origin_frame = gr.State(None)
             with gr.Row(elem_id="main_row"):
                 with gr.Column(elem_id="column_input"):
                     gr.Markdown("## INPUT", elem_id="input_header")
@@ -72,6 +73,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                         randomize_seed = gr.Button(value='\U0001F3B2')
 
                 with gr.Column(elem_id="column_process", min_width=50, scale=0.4):
+                    upload_image = gr.File(label='Upload Image', min_width=50)
                     run_button = gr.Button("Run", min_width=50)
 
                 with gr.Column(elem_id="column_output"):
@@ -85,6 +87,16 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                         show_download_button=True,
                     )
                 download_output = gr.Button("Download output", elem_id="download_output")
+
+            upload_image.change(
+                fn=self.get_meta_from_image,
+                inputs=[
+                    upload_image
+                ],
+                outputs=[
+                    image, origin_frame
+                ]
+            )
             eraser.change(
                 fn=lambda x: gr.update(value=not x),
                 inputs=[eraser],

@@ -37,6 +37,7 @@ css = """
     align-items: center;
 }
 
+
 #tools_header, #input_header, #output_header, #process_header {
     display: flex;
     justify-content: center;
@@ -98,7 +99,6 @@ div.svelte-1030q2h{
     height: 50px;
     border: 0px;
 }
-
 #my-toggle-pencil{
     background-image: url("https://icons.getbootstrap.com/assets/icons/pencil.svg");
     background-color: white;

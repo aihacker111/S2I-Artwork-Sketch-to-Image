@@ -1,5 +1,6 @@
 from PIL import Image
 from io import BytesIO
+import cv2
 import numpy as np
 import base64
 import torch
@@ -36,7 +37,7 @@ class Sketch2ImageController:
         self.MAX_SEED = np.iinfo(np.int32).max
 
         # Initialize the model once here
-        self.model = Sketch2Image()
+        # self.model = Sketch2Image()
 
     def update_canvas(self, use_line, use_eraser):
         brush_size = 20 if use_eraser else 4
@@ -46,6 +47,23 @@ class Sketch2ImageController:
     def upload_sketch(self, file):
         _img = Image.open(file.name).convert("L")
         return self.gr.update(value=_img, source="upload", interactive=True)
+
+    @staticmethod
+    def read_temp_file(temp_file_wrapper):
+        name = temp_file_wrapper.name
+        with open(temp_file_wrapper.name, 'rb') as f:
+            # Read the content of the file
+            file_content = f.read()
+        return file_content, name
+
+    def get_meta_from_image(self, input_img):
+        file_content, _ = self.read_temp_file(input_img)
+        np_arr = np.frombuffer(file_content, np.uint8)
+
+        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        first_frame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        return first_frame, first_frame
 
     @staticmethod
     def pil_image_to_data_uri(img, format="PNG"):
