@@ -5,7 +5,6 @@ root_model
 *.pyc
 debug
 .DS_Store
-S2I/samer/automatic_mask_generator_prob.py
 img.png
 model.yml.gz
 test_ximgproc.py
