@@ -3,7 +3,6 @@ from S2I.modules.models import PrimaryModel
 import gc
 import torch
 import warnings
-from torch.cuda.amp import autocast
 
 warnings.filterwarnings("ignore")
 
@@ -60,5 +59,5 @@ class Sketch2Image(PrimaryModel):
         return output_image
 
 
-if __name__ == '__main__':
-    Sketch2Image()
+# if __name__ == '__main__':
+#     Sketch2Image()

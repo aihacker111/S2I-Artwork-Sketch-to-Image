@@ -69,7 +69,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                             scale=3,
                         )
                         seed = gr.Textbox(label="Seed", value=42, scale=1, min_width=50)
-                        randomize_seed = gr.Button(value='\U0001F3B2', scale=1, min_width=50)
+                        randomize_seed = gr.Button(value='\U0001F3B2')
 
                 with gr.Column(elem_id="column_process", min_width=50, scale=0.4):
                     run_button = gr.Button("Run", min_width=50)
