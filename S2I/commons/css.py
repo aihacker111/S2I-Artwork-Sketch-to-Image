@@ -30,7 +30,7 @@ css = """
     display: none;
 }
 
-#column_input, #column_output{
+#column_input, #column_output, #column_segment{
     width: 500px;
     display: flex;
     /* justify-content: center; */
@@ -38,7 +38,7 @@ css = """
 }
 
 
-#tools_header, #input_header, #output_header, #process_header {
+#tools_header, #segment_header, #input_header, #output_header, #process_header {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -194,7 +194,7 @@ div.svelte-1030q2h{
 
 
 
-#output_image, #input_image{
+#output_image, #input_image, #segment_image{
     border-radius: 0px;
     border: 5px solid #000;
     border-width: none;

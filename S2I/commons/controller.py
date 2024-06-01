@@ -1,15 +1,16 @@
 from PIL import Image
 from io import BytesIO
-import cv2
 import numpy as np
 import base64
 import torch
 import torchvision.transforms.functional as F
 from S2I import Sketch2Image
+from S2I.samer import SAMController
 
 
-class Sketch2ImageController:
+class Sketch2ImageController(SAMController):
     def __init__(self, gr):
+        super().__init__()
         self.gr = gr
         self.style_list = [
             {"name": "Cinematic",
@@ -37,7 +38,7 @@ class Sketch2ImageController:
         self.MAX_SEED = np.iinfo(np.int32).max
 
         # Initialize the model once here
-        self.model = Sketch2Image()
+        # self.model = Sketch2Image()
 
     def update_canvas(self, use_line, use_eraser):
         brush_size = 20 if use_eraser else 4
@@ -49,54 +50,127 @@ class Sketch2ImageController:
         return self.gr.update(value=_img, source="upload", interactive=True)
 
     @staticmethod
-    def read_temp_file(temp_file_wrapper):
-        name = temp_file_wrapper.name
-        with open(temp_file_wrapper.name, 'rb') as f:
-            # Read the content of the file
-            file_content = f.read()
-        return file_content, name
-
-    def get_meta_from_image(self, input_img):
-        file_content, _ = self.read_temp_file(input_img)
-        np_arr = np.frombuffer(file_content, np.uint8)
-
-        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-        first_frame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        return first_frame, first_frame
-
-    @staticmethod
     def pil_image_to_data_uri(img, format="PNG"):
         buffered = BytesIO()
         img.save(buffered, format=format)
         img_str = base64.b64encode(buffered.getvalue()).decode()
         return f"data:image/{format.lower()};base64,{img_str}"
 
-    def artwork(self, image, prompt, prompt_template, style_name, seed, val_r):
-        if image is None:
+    def artwork(self, image, prompt, prompt_template, style_name, seed, val_r, segment_image, segment, origin_frame,
+                model_type):
+
+        # Handle case where both images are None
+        if image is None and segment_image is None:
             ones = Image.new("L", (512, 512), 255)
             temp_uri = self.pil_image_to_data_uri(ones)
-            return ones, self.gr.update(link=temp_uri), self.gr.update(link=temp_uri)
+            return ones, ones, self.gr.update(link=temp_uri), self.gr.update(link=temp_uri)
+        if image is None and segment_image is not None and not np.all(segment_image == 255):
+            segment_image = np.array(segment_image)
+            segment_image = self.automatic_sam2sketch(segment,
+                                                      segment_image,
+                                                      origin_frame,
+                                                      model_type)
+            prompt = prompt_template.replace("{prompt}", prompt)
+            image_t = F.to_tensor(segment_image) > 0.5
 
-        prompt = prompt_template.replace("{prompt}", prompt)
-        image = image.convert("RGB")
-        image_t = F.to_tensor(image) > 0.5
+            # Start GPU operations
+            c_t = image_t.unsqueeze(0).cuda().float()
+            torch.manual_seed(seed)
+            B, C, H, W = c_t.shape
+            noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
 
-        # Start GPU operations
-        c_t = image_t.unsqueeze(0).cuda().float()
-        torch.manual_seed(seed)
-        B, C, H, W = c_t.shape
-        noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
+            with torch.no_grad():
+                output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise)
 
-        with torch.no_grad():
-            output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise)
+            output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
+            input_segment_rgb = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(segment_image)))
+            input_sketch_uri = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(segment_image)))
+            output_image_uri = self.pil_image_to_data_uri(output_pil)
+            return (
+                output_pil,
+                self.gr.update(link=input_segment_rgb),
+                self.gr.update(link=input_sketch_uri),
+                self.gr.update(link=output_image_uri),
+            )
+        if image is not None and segment_image is not None:
+            ones = Image.new("L", (512, 512), 255)
+            temp_uri = self.pil_image_to_data_uri(ones)
+            prompt = prompt_template.replace("{prompt}", prompt)
+            image = image.convert("RGB")
+            image_t = F.to_tensor(image) > 0.5
 
-        output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
-        input_sketch_uri = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(image)))
-        output_image_uri = self.pil_image_to_data_uri(output_pil)
+            # Start GPU operations
+            c_t = image_t.unsqueeze(0).cuda().float()
+            torch.manual_seed(seed)
+            B, C, H, W = c_t.shape
+            noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
 
-        return (
-            output_pil,
-            self.gr.update(link=input_sketch_uri),
-            self.gr.update(link=output_image_uri),
-        )
+            with torch.no_grad():
+                output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise)
+
+            output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
+            input_sketch_uri = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(image)))
+            output_image_uri = self.pil_image_to_data_uri(output_pil)
+
+            return (
+                output_pil,
+                self.gr.update(link=temp_uri),
+                self.gr.update(link=input_sketch_uri),
+                self.gr.update(link=output_image_uri),
+            )
+        if segment_image is not None and image is not None:
+            ones = Image.new("L", (512, 512), 255)
+            temp_uri = self.pil_image_to_data_uri(ones)
+            segment_image = np.array(segment_image)
+            segment_image = self.automatic_sam2sketch(segment,
+                                                      segment_image,
+                                                      origin_frame,
+                                                      model_type)
+            prompt = prompt_template.replace("{prompt}", prompt)
+            image_t = F.to_tensor(segment_image) > 0.5
+
+            # Start GPU operations
+            c_t = image_t.unsqueeze(0).cuda().float()
+            torch.manual_seed(seed)
+            B, C, H, W = c_t.shape
+            noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
+
+            with torch.no_grad():
+                output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise)
+
+            output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
+            input_segment_rgb = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(segment_image)))
+            output_image_uri = self.pil_image_to_data_uri(output_pil)
+
+            return (
+                output_pil,
+                self.gr.update(link=input_segment_rgb),
+                self.gr.update(link=temp_uri),
+                self.gr.update(link=output_image_uri),
+            )
+
+
+        # prompt = prompt_template.replace("{prompt}", prompt)
+        # # image = image.convert("RGB")
+        # image_t = F.to_tensor(image) > 0.5
+        #
+        # # Start GPU operations
+        # c_t = image_t.unsqueeze(0).cuda().float()
+        # torch.manual_seed(seed)
+        # B, C, H, W = c_t.shape
+        # noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
+        #
+        # with torch.no_grad():
+        #     output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise)
+        #
+        # output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
+        # input_segment_rgb = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(image)))
+        # input_sketch_uri = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(image)))
+        # output_image_uri = self.pil_image_to_data_uri(output_pil)
+        #
+        # return (
+        #     output_pil,
+        #     self.gr.update(link=input_segment_rgb),
+        #     self.gr.update(link=input_sketch_uri),
+        #     self.gr.update(link=output_image_uri),
+        # )
