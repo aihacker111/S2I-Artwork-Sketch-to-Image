@@ -2,6 +2,7 @@ __pycache__
 .idea
 output_render
 root_model
+data
 *.pyc
 debug
 .DS_Store
