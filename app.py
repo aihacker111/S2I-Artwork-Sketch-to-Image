@@ -15,38 +15,6 @@ class Sketch2ImageLaunch(Sketch2ImageController):
             line = gr.Checkbox(label="line", value=False, elem_id="cb-line")
             eraser = gr.Checkbox(label="eraser", value=False, elem_id="cb-eraser")
             with gr.Row(elem_id="main_row"):
-                run_button = gr.Button("Generate", min_width=50)
-                prompt = gr.Textbox(label="Prompt", value="", show_label=True)
-                with gr.Row():
-                    style = gr.Dropdown(
-                        label="Style",
-                        choices=self.STYLE_NAMES,
-                        value=self.DEFAULT_STYLE_NAME,
-                        scale=1,
-                    )
-                    prompt_temp = gr.Textbox(
-                        label="Prompt Style Template",
-                        value=self.styles[self.DEFAULT_STYLE_NAME],
-                        scale=2,
-                        max_lines=1,
-                    )
-                    # with gr.Row():
-                    val_r = gr.Slider(
-                        label="Sketch guidance: ",
-                        show_label=True,
-                        minimum=0,
-                        maximum=1,
-                        value=0.4,
-                        step=0.01,
-                        scale=3,
-                    )
-                    half_model = gr.Radio(
-                        choices=["fp32", "fp16"],
-                        value="fp32",
-                        label="Demo Speed",
-                        interactive=True)
-                    seed = gr.Textbox(label="Seed", value='42', scale=1, min_width=50)
-                    randomize_seed = gr.Button(value='\U0001F3B2')
                 with gr.Column(elem_id="column_input"):
                     gr.Markdown("## INPUT", elem_id="input_header")
                     image = gr.Image(
@@ -79,6 +47,8 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                     </div>
                     """
                     )
+                    run_button = gr.Button("Generate", min_width=50)
+                    prompt = gr.Textbox(label="Prompt", value="", show_label=True)
 
                 with gr.Column(elem_id="column_output"):
                     gr.Markdown("## OUTPUT", elem_id="output_header")
@@ -90,7 +60,36 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                         show_label=False,
                         show_download_button=True,
                     )
-
+                    with gr.Row():
+                        style = gr.Dropdown(
+                            label="Style",
+                            choices=self.STYLE_NAMES,
+                            value=self.DEFAULT_STYLE_NAME,
+                            scale=1,
+                        )
+                        prompt_temp = gr.Textbox(
+                            label="Prompt Style Template",
+                            value=self.styles[self.DEFAULT_STYLE_NAME],
+                            scale=2,
+                            max_lines=1,
+                        )
+                        # with gr.Row():
+                        val_r = gr.Slider(
+                            label="Sketch guidance: ",
+                            show_label=True,
+                            minimum=0,
+                            maximum=1,
+                            value=0.4,
+                            step=0.01,
+                            scale=3,
+                        )
+                        half_model = gr.Radio(
+                            choices=["fp32", "fp16"],
+                            value="fp32",
+                            label="Demo Speed",
+                            interactive=True)
+                        seed = gr.Textbox(label="Seed", value='42', scale=1, min_width=50)
+                        randomize_seed = gr.Button(value='\U0001F3B2')
                     download_output = gr.Button("Download output", elem_id="download_output")
 
             eraser.change(

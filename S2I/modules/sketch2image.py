@@ -26,7 +26,7 @@ class Sketch2Image(PrimaryModel):
     def generate(self, c_t, prompt=None, prompt_tokens=None, r=1.0, noise_map=None, half_model=None):
         assert (prompt is None) != (prompt_tokens is None), "Either prompt or prompt_tokens should be provided"
         if half_model == 'fp16':
-            with torch.autocast:
+            with torch.autocast(device_type='cuda'):
                 if prompt is not None:
                     caption_tokens = self.tokenizer(prompt, max_length=self.tokenizer.model_max_length,
                                                     padding="max_length", truncation=True,
