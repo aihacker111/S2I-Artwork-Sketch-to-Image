@@ -62,7 +62,7 @@ class Sketch2ImageController(Sketch2Image):
         if image is None:
             ones = Image.new("L", (512, 512), 255)
             temp_uri = self.pil_image_to_data_uri(ones)
-            return ones, ones, self.gr.update(link=temp_uri), self.gr.update(link=temp_uri)
+            return ones, self.gr.update(link=temp_uri), self.gr.update(link=temp_uri)
 
         prompt = prompt_template.replace("{prompt}", prompt)
         image = image.convert("RGB")

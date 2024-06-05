@@ -16,7 +16,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
             eraser = gr.Checkbox(label="eraser", value=False, elem_id="cb-eraser")
             with gr.Row(elem_id="main_row"):
                 with gr.Column(elem_id="column_input"):
-                    gr.Markdown("## INPUT", elem_id="input_header")
+                    gr.Markdown("## SKETCH", elem_id="input_header")
                     image = gr.Image(
                         source="canvas",
                         tool="color-sketch",
@@ -51,7 +51,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                     prompt = gr.Textbox(label="Prompt", value="", show_label=True)
 
                 with gr.Column(elem_id="column_output"):
-                    gr.Markdown("## OUTPUT", elem_id="output_header")
+                    gr.Markdown("## IMAGE GENERATE", elem_id="output_header")
                     result = gr.Image(
                         label="Result",
                         height=440,
