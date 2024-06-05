@@ -10,7 +10,7 @@ css = """
 }
 
 /* #main_row{
-
+    
 } */
 
 /* hide this class */
@@ -30,15 +30,14 @@ css = """
     display: none;
 }
 
-#column_input, #column_output, #column_segment{
+#column_input, #column_output{
     width: 500px;
     display: flex;
     /* justify-content: center; */
     align-items: center;
 }
 
-
-#tools_header, #segment_header, #input_header, #output_header, #process_header {
+#tools_header, #input_header, #output_header, #process_header {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -99,6 +98,7 @@ div.svelte-1030q2h{
     height: 50px;
     border: 0px;
 }
+
 #my-toggle-pencil{
     background-image: url("https://icons.getbootstrap.com/assets/icons/pencil.svg");
     background-color: white;
@@ -166,7 +166,7 @@ div.svelte-1030q2h{
     box-shadow: none;
     width: 40px;
     height: 40px;
-
+    
 }
 
 
@@ -178,7 +178,7 @@ div.svelte-1030q2h{
     box-shadow: none;
     width: 40px;
     height: 40px;
-
+    
 }
 
 .pad2{
@@ -194,7 +194,7 @@ div.svelte-1030q2h{
 
 
 
-#output_image, #input_image, #segment_image{
+#output_image, #input_image{
     border-radius: 0px;
     border: 5px solid #000;
     border-width: none;
