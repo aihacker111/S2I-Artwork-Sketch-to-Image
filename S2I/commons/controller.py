@@ -8,7 +8,7 @@ from S2I import Sketch2Image
 # from S2I.samer import SAMController
 
 
-class Sketch2ImageController():
+class Sketch2ImageController(Sketch2Image):
     def __init__(self, gr):
         super().__init__()
         self.gr = gr
@@ -38,7 +38,7 @@ class Sketch2ImageController():
         self.MAX_SEED = np.iinfo(np.int32).max
 
         # Initialize the model once here
-        self.model = Sketch2Image()
+        # self.model = Sketch2Image()
 
     def update_canvas(self, use_line, use_eraser):
         brush_size = 20 if use_eraser else 4
@@ -75,7 +75,7 @@ class Sketch2ImageController():
         noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
 
         with torch.no_grad():
-            output_image = self.model.generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster)
+            output_image = self.generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster)
 
         output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
         input_segment_rgb = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(image)))
