@@ -78,7 +78,7 @@ class Sketch2Image(PrimaryModel):
             unet_input = encoded_control * r + noise_map * (1 - r)
             self.unet.conv_in.r = r
             unet_output = self.unet(unet_input, self.timestep, encoder_hidden_states=caption_enc).sample
-            # self.unet.conv_in.r = None
+            self.unet.conv_in.r = None
             x_denoise = self.scheduler.step(unet_output, self.timestep, unet_input, return_dict=True).prev_sample
 
             # Move VAE back to GPU for decoding
