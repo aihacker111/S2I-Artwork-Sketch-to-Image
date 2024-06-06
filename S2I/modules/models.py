@@ -1,9 +1,23 @@
 import torch
+import copy
 from diffusers import DDPMScheduler
 from transformers import AutoTokenizer, CLIPTextModel
 from diffusers import AutoencoderKL, UNet2DConditionModel
 from peft import LoraConfig
 from S2I.modules.utils import sc_vae_encoder_fwd, sc_vae_decoder_fwd, download_url
+
+
+class TwinConv(torch.nn.Module):
+    def __init__(self, conv_in_pretrained, conv_in_curr):
+        super(TwinConv, self).__init__()
+        self.conv_in_pretrained = copy.deepcopy(conv_in_pretrained)
+        self.conv_in_curr = copy.deepcopy(conv_in_curr)
+        self.r = 1.0
+
+    def forward(self, x):
+        x1 = self.conv_in_pretrained(x).detach()
+        x2 = self.conv_in_curr(x)
+        return x1 * (1 - self.r) + x2 * self.r
 
 
 class PrimaryModel:
@@ -58,6 +72,8 @@ class PrimaryModel:
             self.global_unet = UNet2DConditionModel.from_pretrained(self.backbone_diffusion_path, subfolder="unet")
             p_ckpt = download_url()
             sd = torch.load(p_ckpt, map_location="cpu")
+            conv_in_pretrained = copy.deepcopy(self.global_unet.conv_in)
+            self.global_unet.conv_in = TwinConv(conv_in_pretrained, self.global_unet.conv_in)
             unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian",
                                           target_modules=sd["unet_lora_target_modules"])
             vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian",
