@@ -82,7 +82,4 @@ def download_models():
 
 
 def get_model_path(model_name, model_paths):
-    if model_name is None:
-        logger.info('Downloading Backbone Stable Diffusion Models')
-    else:
-        return model_paths.get(model_name, "Model not found")
+    return model_paths.get(model_name, "Model not found")

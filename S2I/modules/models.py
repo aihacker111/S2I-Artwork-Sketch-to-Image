@@ -57,8 +57,9 @@ class PrimaryModel:
         vae.decoder.skip_conv_4 = torch.nn.Conv2d(128, 256, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
         vae.decoder.ignore_skip = False
         return vae
+
     @staticmethod
-    def _initialize_sketch2image(model_name, unet, vae):
+    def initialize_sketch2image(model_name, unet, vae):
         p_ckpt_path = download_models()
         p_ckpt = get_model_path(model_name=model_name, model_paths=p_ckpt_path)
         sd = torch.load(p_ckpt, map_location="cpu")
@@ -78,8 +79,9 @@ class PrimaryModel:
         for k in sd["state_dict_unet"]:
             _sd_unet[k] = sd["state_dict_unet"][k]
         unet.load_state_dict(_sd_unet, strict=False)
+        return unet, vae
 
-    def from_pretrained(self, model_name):
+    def from_pretrained(self):
         if self.global_tokenizer is None:
             self.global_tokenizer = AutoTokenizer.from_pretrained(self.backbone_diffusion_path,
                                                                   subfolder="tokenizer")
@@ -97,6 +99,6 @@ class PrimaryModel:
 
         if self.global_unet is None:
             self.global_unet = self._load_model(self.backbone_diffusion_path, UNet2DConditionModel, unet_mode=True)
-        self._initialize_sketch2image(model_name, self.global_unet, self.global_vae)
         self.global_unet.to('cuda')
         self.global_text_encoder.to('cuda')
+        return self.global_unet, self.global_vae, self.global_tokenizer, self.global_text_encoder, self.global_scheduler
