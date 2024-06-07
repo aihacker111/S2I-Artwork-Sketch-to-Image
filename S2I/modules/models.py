@@ -30,11 +30,18 @@ class PrimaryModel:
         self.global_scheduler = None
 
     @staticmethod
-    def _load_model(path, model_class):
-        model = model_class.from_pretrained(path)
-        model = copy.deepcopy(model)
-        model = model.to('cuda')
-        return model
+    def _load_model(path, model_class, unet_mode=False):
+        if unet_mode:
+            model = model_class.from_pretrained(path, subfolder='unet')
+            model = copy.deepcopy(model)
+            model = model.to('cuda')
+            return model
+        else:
+            model = model_class.from_pretrained(path, subfolder='vae')
+            model = copy.deepcopy(model)
+            model = model.to('cuda')
+            return model
+
 
     def one_step_scheduler(self):
         noise_scheduler_1step = DDPMScheduler.from_pretrained(self.backbone_diffusion_path, subfolder="scheduler")
@@ -67,7 +74,7 @@ class PrimaryModel:
             self.global_vae = self.skip_connections(self.global_vae)
 
         if self.global_unet is None:
-            self.global_unet = self._load_model(self.backbone_diffusion_path, UNet2DConditionModel)
+            self.global_unet = self._load_model(self.backbone_diffusion_path, UNet2DConditionModel, unet_mode=True)
             p_ckpt_path = download_models()
             p_ckpt = get_model_path(model_name=model_name, model_paths=p_ckpt_path)
             sd = torch.load(p_ckpt, map_location="cpu")
