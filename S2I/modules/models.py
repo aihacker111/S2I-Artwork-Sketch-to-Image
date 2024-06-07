@@ -59,27 +59,25 @@ class PrimaryModel:
         return vae
 
     def from_pretrained(self, model_name):
-        if model_name is None:
-            if self.global_tokenizer is None:
-                self.global_tokenizer = AutoTokenizer.from_pretrained(self.backbone_diffusion_path,
-                                                                      subfolder="tokenizer")
+        if self.global_tokenizer is None:
+            self.global_tokenizer = AutoTokenizer.from_pretrained(self.backbone_diffusion_path,
+                                                                  subfolder="tokenizer")
 
-            if self.global_text_encoder is None:
-                self.global_text_encoder = CLIPTextModel.from_pretrained(self.backbone_diffusion_path,
-                                                                         subfolder="text_encoder").to(device='cuda')
+        if self.global_text_encoder is None:
+            self.global_text_encoder = CLIPTextModel.from_pretrained(self.backbone_diffusion_path,
+                                                                     subfolder="text_encoder").to(device='cuda')
 
-            if self.global_scheduler is None:
-                self.global_scheduler = self.one_step_scheduler()
+        if self.global_scheduler is None:
+            self.global_scheduler = self.one_step_scheduler()
 
-            if self.global_vae is None:
-                self.global_vae = self._load_model(self.backbone_diffusion_path, AutoencoderKL)
-                self.global_vae = self.skip_connections(self.global_vae)
+        if self.global_vae is None:
+            self.global_vae = self._load_model(self.backbone_diffusion_path, AutoencoderKL)
+            self.global_vae = self.skip_connections(self.global_vae)
 
-            if self.global_unet is None:
-                self.global_unet = self._load_model(self.backbone_diffusion_path, UNet2DConditionModel, unet_mode=True)
-            self.global_unet.to('cuda')
-            self.global_text_encoder.to('cuda')
-        else:
+        if self.global_unet is None:
+            self.global_unet = self._load_model(self.backbone_diffusion_path, UNet2DConditionModel, unet_mode=True)
+
+        if model_name is not None:
             p_ckpt_path = download_models()
             p_ckpt = get_model_path(model_name=model_name, model_paths=p_ckpt_path)
             sd = torch.load(p_ckpt, map_location="cpu")
@@ -99,3 +97,5 @@ class PrimaryModel:
             for k in sd["state_dict_unet"]:
                 _sd_unet[k] = sd["state_dict_unet"][k]
             self.global_unet.load_state_dict(_sd_unet, strict=False)
+        self.global_unet.to('cuda')
+        self.global_text_encoder.to('cuda')
