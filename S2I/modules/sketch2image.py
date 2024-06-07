@@ -11,10 +11,10 @@ class Sketch2Image(PrimaryModel):
     def __init__(self):
         super().__init__()
         self.timestep = torch.tensor([999], device="cuda").long()
-        self.from_pretrained(model_name=None, load_model=True)
+        self.from_pretrained(model_name=None)
 
     def generate(self, c_t, prompt=None, prompt_tokens=None, r=1.0, noise_map=None, half_model=None, model_name=None):
-        self.from_pretrained(model_name, load_model=False)
+        self.from_pretrained(model_name)
         assert (prompt is None) != (prompt_tokens is None), "Either prompt or prompt_tokens should be provided"
 
         if half_model == 'fp16':
