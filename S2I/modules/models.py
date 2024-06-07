@@ -89,3 +89,6 @@ class PrimaryModel:
             for k in sd["state_dict_unet"]:
                 _sd_unet[k] = sd["state_dict_unet"][k]
             self.global_unet.load_state_dict(_sd_unet, strict=False)
+
+        self.global_text_encoder.to('cuda')
+        self.global_unet.to('cuda')

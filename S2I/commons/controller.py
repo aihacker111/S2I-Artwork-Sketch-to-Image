@@ -5,7 +5,6 @@ import base64
 import torch
 import torchvision.transforms.functional as F
 from S2I import Sketch2Image
-# from S2I.samer import SAMController
 
 
 class Sketch2ImageController(Sketch2Image):
@@ -71,7 +70,7 @@ class Sketch2ImageController(Sketch2Image):
         # Start GPU operations
         c_t = image_t.unsqueeze(0).cuda().float()
         torch.manual_seed(seed)
-        B, C, H, W = c_t.shape
+        _, _, H, W = c_t.shape
         noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
 
         with torch.no_grad():
