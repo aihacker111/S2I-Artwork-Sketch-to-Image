@@ -32,7 +32,7 @@ class Sketch2Image(PrimaryModel):
 
             unet_input = encoded_control * r + noise_map * (1 - r)
             unet_output = self.global_unet(unet_input, self.timestep, encoder_hidden_states=caption_enc).sample
-
+            self.global_unet.conv_in.r = None
             x_denoise = self.global_scheduler.step(unet_output, self.timestep, unet_input, return_dict=True).prev_sample
 
             self._move_to_gpu(self.global_vae)
@@ -56,7 +56,7 @@ class Sketch2Image(PrimaryModel):
 
         unet_input = encoded_control * r + noise_map * (1 - r)
         unet_output = self.global_unet(unet_input, self.timestep, encoder_hidden_states=caption_enc).sample
-
+        self.global_unet.conv_in.r = None
         x_denoise = self.global_scheduler.step(unet_output, self.timestep, unet_input, return_dict=True).prev_sample
 
         self._move_to_gpu(self.global_vae)

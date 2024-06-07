@@ -12,7 +12,7 @@ class RelationShipConvolution(torch.nn.Module):
         super(RelationShipConvolution, self).__init__()
         self.conv_in_pretrained = copy.deepcopy(conv_in_pretrained)
         self.conv_in_curr = copy.deepcopy(conv_in_curr)
-        self.r = 1.0
+        self.r = None
 
     def forward(self, x):
         x1 = self.conv_in_pretrained(x).detach()
