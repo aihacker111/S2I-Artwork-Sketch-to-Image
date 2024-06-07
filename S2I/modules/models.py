@@ -58,30 +58,7 @@ class PrimaryModel:
         vae.decoder.ignore_skip = False
         return vae
 
-    @staticmethod
-    def initialize_sketch2image(model_name, unet, vae):
-        p_ckpt_path = download_models()
-        p_ckpt = get_model_path(model_name=model_name, model_paths=p_ckpt_path)
-        sd = torch.load(p_ckpt, map_location="cpu")
-        conv_in_pretrained = copy.deepcopy(unet.conv_in)
-        unet.conv_in = RelationShipConvolution(conv_in_pretrained, unet.conv_in)
-        unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian",
-                                      target_modules=sd["unet_lora_target_modules"])
-        vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian",
-                                     target_modules=sd["vae_lora_target_modules"])
-        vae.add_adapter(vae_lora_config, adapter_name="vae_skip")
-        _sd_vae = vae.state_dict()
-        for k in sd["state_dict_vae"]:
-            _sd_vae[k] = sd["state_dict_vae"][k]
-        vae.load_state_dict(_sd_vae)
-        unet.add_adapter(unet_lora_config)
-        _sd_unet = unet.state_dict()
-        for k in sd["state_dict_unet"]:
-            _sd_unet[k] = sd["state_dict_unet"][k]
-        unet.load_state_dict(_sd_unet, strict=False)
-        return unet, vae
-
-    def from_pretrained(self):
+    def from_pretrained(self, model_name):
         if self.global_tokenizer is None:
             self.global_tokenizer = AutoTokenizer.from_pretrained(self.backbone_diffusion_path,
                                                                   subfolder="tokenizer")
@@ -99,6 +76,24 @@ class PrimaryModel:
 
         if self.global_unet is None:
             self.global_unet = self._load_model(self.backbone_diffusion_path, UNet2DConditionModel, unet_mode=True)
-        self.global_unet.to('cuda')
-        self.global_text_encoder.to('cuda')
-        return self.global_unet, self.global_vae, self.global_tokenizer, self.global_text_encoder, self.global_scheduler
+            p_ckpt_path = download_models()
+            p_ckpt = get_model_path(model_name=model_name, model_paths=p_ckpt_path)
+            sd = torch.load(p_ckpt, map_location="cpu")
+            conv_in_pretrained = copy.deepcopy(self.global_unet.conv_in)
+            self.global_unet.conv_in = RelationShipConvolution(conv_in_pretrained, self.global_unet.conv_in)
+            unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian",
+                                          target_modules=sd["unet_lora_target_modules"])
+            vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian",
+                                         target_modules=sd["vae_lora_target_modules"])
+            self.global_vae.add_adapter(vae_lora_config, adapter_name="vae_skip")
+            _sd_vae = self.global_vae.state_dict()
+            for k in sd["state_dict_vae"]:
+                _sd_vae[k] = sd["state_dict_vae"][k]
+            self.global_vae.load_state_dict(_sd_vae)
+            self.global_unet.add_adapter(unet_lora_config)
+            _sd_unet = self.global_unet.state_dict()
+            for k in sd["state_dict_unet"]:
+                _sd_unet[k] = sd["state_dict_unet"][k]
+            self.global_unet.load_state_dict(_sd_unet, strict=False)
+            self.global_unet.to('cuda')
+            self.global_text_encoder.to('cuda')
