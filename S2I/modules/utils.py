@@ -1,6 +1,7 @@
 import os
 import requests
 from tqdm import tqdm
+from S2I.logger import logger
 
 
 def sc_vae_encoder_fwd(self, sample):
@@ -81,4 +82,7 @@ def download_models():
 
 
 def get_model_path(model_name, model_paths):
-    return model_paths.get(model_name, "Model not found")
+    if model_name is None:
+        logger.log('Downloading Backbone Stable Diffusion Models')
+    else:
+        return model_paths.get(model_name, "Model not found")
