@@ -8,11 +8,11 @@ warnings.filterwarnings("ignore")
 
 
 class Sketch2Image(PrimaryModel):
-    def __init__(self, default_model_name=""):
+    def __init__(self):
         super().__init__()
         self.timestep = torch.tensor([999], device="cuda").long()
-        self.from_pretrained(model_name=self.model_name)
-        self.model_name = default_model_name
+        self.from_pretrained(self.model_name)
+        self.model_name = ""
 
     def generate(self, c_t, prompt=None, prompt_tokens=None, r=1.0, noise_map=None, half_model=None, model_name=None):
         if isinstance(model_name, str):
