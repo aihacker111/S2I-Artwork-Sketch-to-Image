@@ -26,7 +26,7 @@ class Sketch2Image(PrimaryModel):
             caption_enc = self._get_caption_enc(prompt, prompt_tokens)
 
             self._set_weights_and_activate_adapters(r)
-
+            self._move_to_gpu(self.global_vae)
             encoded_control = self.global_vae.encode(c_t).latent_dist.sample() * self.global_vae.config.scaling_factor
             self._move_to_cpu(self.global_vae)
 
@@ -50,7 +50,7 @@ class Sketch2Image(PrimaryModel):
         caption_enc = self._get_caption_enc(prompt, prompt_tokens)
 
         self._set_weights_and_activate_adapters(r)
-
+        self._move_to_gpu(self.global_vae)
         encoded_control = self.global_vae.encode(c_t).latent_dist.sample() * self.global_vae.config.scaling_factor
         self._move_to_cpu(self.global_vae)
 
