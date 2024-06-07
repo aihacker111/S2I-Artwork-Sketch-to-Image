@@ -11,12 +11,9 @@ class Sketch2Image(PrimaryModel):
     def __init__(self):
         super().__init__()
         self.timestep = torch.tensor([999], device="cuda").long()
-        self.from_pretrained(self.model_name)
-        self.model_name = ""
 
     def generate(self, c_t, prompt=None, prompt_tokens=None, r=1.0, noise_map=None, half_model=None, model_name=None):
-        if isinstance(model_name, str):
-            self.model_name = model_name
+        self.from_pretrained(model_name=model_name)
         assert (prompt is None) != (prompt_tokens is None), "Either prompt or prompt_tokens should be provided"
 
         if half_model == 'fp16':
@@ -76,8 +73,8 @@ class Sketch2Image(PrimaryModel):
     def _get_caption_enc(self, prompt, prompt_tokens):
         if prompt is not None:
             caption_tokens = self.global_tokenizer(prompt, max_length=self.global_tokenizer.model_max_length,
-                                            padding="max_length", truncation=True,
-                                            return_tensors="pt").input_ids.cuda()
+                                                   padding="max_length", truncation=True,
+                                                   return_tensors="pt").input_ids.cuda()
         else:
             caption_tokens = prompt_tokens.cuda()
 
