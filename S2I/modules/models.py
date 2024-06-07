@@ -4,12 +4,12 @@ from diffusers import DDPMScheduler
 from transformers import AutoTokenizer, CLIPTextModel
 from diffusers import AutoencoderKL, UNet2DConditionModel
 from peft import LoraConfig
-from S2I.modules.utils import sc_vae_encoder_fwd, sc_vae_decoder_fwd, download_url
+from S2I.modules.utils import sc_vae_encoder_fwd, sc_vae_decoder_fwd, download_models, get_model_path
 
 
-class TwinConv(torch.nn.Module):
+class RelationShipConvolution(torch.nn.Module):
     def __init__(self, conv_in_pretrained, conv_in_curr):
-        super(TwinConv, self).__init__()
+        super(RelationShipConvolution, self).__init__()
         self.conv_in_pretrained = copy.deepcopy(conv_in_pretrained)
         self.conv_in_curr = copy.deepcopy(conv_in_curr)
         self.r = None
@@ -52,7 +52,7 @@ class PrimaryModel:
         vae.decoder.ignore_skip = False
         return vae
 
-    def from_pretrained(self):
+    def from_pretrained(self, model_name):
 
         if self.global_tokenizer is None:
             self.global_tokenizer = AutoTokenizer.from_pretrained(self.backbone_diffusion_path, subfolder="tokenizer")
@@ -70,10 +70,11 @@ class PrimaryModel:
 
         if self.global_unet is None:
             self.global_unet = UNet2DConditionModel.from_pretrained(self.backbone_diffusion_path, subfolder="unet")
-            p_ckpt = download_url()
+            p_ckpt_path = download_models()
+            p_ckpt = get_model_path(model_name=model_name, model_paths=p_ckpt_path)
             sd = torch.load(p_ckpt, map_location="cpu")
             conv_in_pretrained = copy.deepcopy(self.global_unet.conv_in)
-            self.global_unet.conv_in = TwinConv(conv_in_pretrained, self.global_unet.conv_in)
+            self.global_unet.conv_in = RelationShipConvolution(conv_in_pretrained, self.global_unet.conv_in)
             unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian",
                                           target_modules=sd["unet_lora_target_modules"])
             vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian",

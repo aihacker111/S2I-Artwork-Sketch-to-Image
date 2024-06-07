@@ -56,7 +56,7 @@ class Sketch2ImageController(Sketch2Image):
         img_str = base64.b64encode(buffered.getvalue()).decode()
         return f"data:image/{format.lower()};base64,{img_str}"
 
-    def artwork(self, image, prompt, prompt_template, style_name, seed, val_r, faster):
+    def artwork(self, image, prompt, prompt_template, style_name, seed, val_r, faster, model_name):
 
         # Handle case where both images are None
         if image is None:
@@ -75,7 +75,7 @@ class Sketch2ImageController(Sketch2Image):
         noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
 
         with torch.no_grad():
-            output_image = self.generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster)
+            output_image = self.generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster, model_name=model_name)
 
         output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
         input_segment_rgb = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(image)))

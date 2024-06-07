@@ -88,6 +88,11 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                             value="fp32",
                             label="Demo Speed",
                             interactive=True)
+                        model_options = gr.Radio(
+                            choices=["30k", "60k"],
+                            value="30k",
+                            label="Type Sketch2Image models",
+                            interactive=True)
                         seed = gr.Textbox(label="Seed", value='42', scale=1, min_width=50)
                         randomize_seed = gr.Button(value='\U0001F3B2')
                     download_output = gr.Button("Download output", elem_id="download_output")
@@ -114,7 +119,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                 queue=False,
                 api_name=False,
             )
-            inputs = [image, prompt, prompt_temp, style, seed, val_r, half_model]
+            inputs = [image, prompt, prompt_temp, style, seed, val_r, half_model, model_options]
             outputs = [result, download_sketch, download_output]
             prompt.submit(fn=self.artwork, inputs=inputs, outputs=outputs, api_name=False)
             style.change(

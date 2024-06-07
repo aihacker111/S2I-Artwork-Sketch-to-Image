@@ -44,14 +44,7 @@ def sc_vae_decoder_fwd(self, sample, latent_embeds=None):
     return sample
 
 
-def download_url():
-    # url = "https://huggingface.co/myn0908/sk2ks/resolve/main/model_12001.pkl?download=true"
-    # url = 'https://huggingface.co/myn0908/sk2ks/resolve/main/sketch2image_mixed_weights_16k_steps.pkl?download=true'
-    # url = 'https://huggingface.co/myn0908/sk2ks/resolve/main/sketch2image_mixed_weights_32k.pkl?download=true'
-    url = 'https://huggingface.co/myn0908/sk2ks/resolve/main/sketch2image-lora-mixed-weights-57k-steps.pkl?download=true'
-    ckpt_folder = 'checkpoints'
-    os.makedirs(ckpt_folder, exist_ok=True)
-    outf = os.path.join(ckpt_folder, "sketch2image_lora_mixed_weights.pkl")
+def downloading(url, outf):
     if not os.path.exists(outf):
         print(f"Downloading checkpoint to {outf}")
         response = requests.get(url, stream=True)
@@ -68,4 +61,24 @@ def download_url():
         print(f"Downloaded successfully to {outf}")
     else:
         print(f"Skipping download, {outf} already exists")
-    return outf
+
+
+def download_models():
+    urls = {
+        '60k': 'https://huggingface.co/myn0908/sk2ks/resolve/main/sketch2image-lora-mixed-weights-57k-steps.pkl?download=true',
+        '30k': 'https://huggingface.co/myn0908/sk2ks/resolve/main/sketch2image_mixed_weights_32k.pkl?download=true'
+    }
+    ckpt_folder = 'checkpoints'
+    os.makedirs(ckpt_folder, exist_ok=True)
+
+    model_paths = {}
+    for model_name, url in urls.items():
+        outf = os.path.join(ckpt_folder, f"sketch2image_lora_{model_name}.pkl")
+        downloading(url, outf)
+        model_paths[model_name] = outf
+
+    return model_paths
+
+
+def get_model_path(model_name, model_paths):
+    return model_paths.get(model_name, "Model not found")
