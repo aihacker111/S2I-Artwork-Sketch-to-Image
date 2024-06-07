@@ -8,11 +8,11 @@ from S2I.modules.utils import sc_vae_encoder_fwd, sc_vae_decoder_fwd, download_m
 
 
 class RelationShipConvolution(torch.nn.Module):
-    def __init__(self, conv_in_pretrained, conv_in_curr):
+    def __init__(self, conv_in_pretrained, conv_in_curr, r):
         super(RelationShipConvolution, self).__init__()
         self.conv_in_pretrained = copy.deepcopy(conv_in_pretrained)
         self.conv_in_curr = copy.deepcopy(conv_in_curr)
-        self.r = None
+        self.r = r
 
     def forward(self, x):
         x1 = self.conv_in_pretrained(x).detach()
@@ -58,7 +58,7 @@ class PrimaryModel:
         vae.decoder.ignore_skip = False
         return vae
 
-    def from_pretrained(self, model_name):
+    def from_pretrained(self, model_name, r):
         if self.global_tokenizer is None:
             self.global_tokenizer = AutoTokenizer.from_pretrained(self.backbone_diffusion_path,
                                                                   subfolder="tokenizer")
@@ -80,7 +80,7 @@ class PrimaryModel:
             p_ckpt = get_model_path(model_name=model_name, model_paths=p_ckpt_path)
             sd = torch.load(p_ckpt, map_location="cpu")
             conv_in_pretrained = copy.deepcopy(self.global_unet.conv_in)
-            self.global_unet.conv_in = RelationShipConvolution(conv_in_pretrained, self.global_unet.conv_in)
+            self.global_unet.conv_in = RelationShipConvolution(conv_in_pretrained, self.global_unet.conv_in, r)
             unet_lora_config = LoraConfig(r=sd["rank_unet"], init_lora_weights="gaussian",
                                           target_modules=sd["unet_lora_target_modules"])
             vae_lora_config = LoraConfig(r=sd["rank_vae"], init_lora_weights="gaussian",
