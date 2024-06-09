@@ -4,10 +4,9 @@ import numpy as np
 import base64
 import torch
 import torchvision.transforms.functional as F
-from S2I import Sketch2Image
 
 
-class Sketch2ImageController(Sketch2Image):
+class Sketch2ImageController:
     def __init__(self, gr):
         super().__init__()
         self.gr = gr
@@ -55,9 +54,9 @@ class Sketch2ImageController(Sketch2Image):
         img_str = base64.b64encode(buffered.getvalue()).decode()
         return f"data:image/{format.lower()};base64,{img_str}"
 
-    def artwork(self, image, prompt, prompt_template, style_name, seed, val_r, faster, model_name):
+    def artwork(self, pipeline, image, prompt, prompt_template, style_name, seed, val_r, faster, model_name):
         # Handle case where both images are None
-        if image["composite"] is None:
+        if image is None:
             ones = Image.new("L", (512, 512), 255)
             temp_uri = self.pil_image_to_data_uri(ones)
             return ones, self.gr.update(link=temp_uri)
@@ -76,7 +75,7 @@ class Sketch2ImageController(Sketch2Image):
         noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
 
         with torch.no_grad():
-            output_image = self.generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster,
+            output_image = pipeline.generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster,
                                          model_name=model_name)
 
         output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
@@ -86,5 +85,4 @@ class Sketch2ImageController(Sketch2Image):
         return (
             output_pil,
             self.gr.update(link=input_sketch_uri),
-            # self.gr.update(link=output_image_uri),
         )

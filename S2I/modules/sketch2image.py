@@ -7,7 +7,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-class Sketch2Image(PrimaryModel):
+class Sketch2ImagePipeline(PrimaryModel):
     def __init__(self):
         super().__init__()
         self.timestep = torch.tensor([999], device="cuda").long()

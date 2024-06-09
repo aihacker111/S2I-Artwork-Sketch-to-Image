@@ -1,9 +1,11 @@
 import gradio as gr
 import random
 import warnings
-from S2I import Sketch2ImageController, css, scripts
+from S2I import Sketch2ImageController, Sketch2ImagePipeline, css, scripts
 
 warnings.filterwarnings("ignore")
+
+pipe = Sketch2ImagePipeline()
 
 
 class Sketch2ImageLaunch(Sketch2ImageController):
@@ -50,8 +52,8 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                     gr.Markdown("## IMAGE GENERATE", elem_id="output_header")
                     result = gr.Image(
                         label="Result",
-                        height=512,
-                        width=512,
+                        height=440,
+                        width=440,
                         elem_id="output_image",
                         show_label=False,
                         show_download_button=True,
@@ -100,7 +102,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                 queue=False,
                 api_name=False,
             )
-            inputs = [image, prompt, prompt_temp, style, seed, val_r, half_model, model_options]
+            inputs = [pipe, image, prompt, prompt_temp, style, seed, val_r, half_model, model_options]
             outputs = [result, download_sketch]
             prompt.submit(fn=self.artwork, inputs=inputs, outputs=outputs, api_name=False)
             style.change(
