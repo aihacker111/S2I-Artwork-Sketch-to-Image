@@ -31,7 +31,7 @@ css = """
 }
 
 #column_input, #column_output{
-    width: 500px;
+    width: 500;
     display: flex;
     /* justify-content: center; */
     align-items: center;

@@ -7,7 +7,7 @@ import torchvision.transforms.functional as F
 from S2I import Sketch2Image
 
 
-class Sketch2ImageController():
+class Sketch2ImageController(Sketch2Image):
     def __init__(self, gr):
         super().__init__()
         self.gr = gr
@@ -59,8 +59,8 @@ class Sketch2ImageController():
         # Handle case where both images are None
         if image is None:
             ones = Image.new("L", (512, 512), 255)
-            # temp_uri = self.pil_image_to_data_uri(ones)
-            return ones
+            temp_uri = self.pil_image_to_data_uri(ones)
+            return ones, self.gr.update(link=temp_uri)
 
         prompt = prompt_template.replace("{prompt}", prompt)
         img = Image.fromarray(np.array(image["composite"])[:, :, -1])
@@ -80,11 +80,11 @@ class Sketch2ImageController():
                                          model_name=model_name)
 
         output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
-        # input_sketch_uri = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(img)))
+        input_sketch_uri = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(img)))
         # output_image_uri = self.pil_image_to_data_uri(output_pil)
 
         return (
             output_pil,
-            # self.gr.update(link=input_sketch_uri),
+            self.gr.update(link=input_sketch_uri),
             # self.gr.update(link=output_image_uri),
         )

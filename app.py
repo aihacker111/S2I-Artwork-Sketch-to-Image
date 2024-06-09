@@ -29,9 +29,9 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                         canvas_size=(1024, 1024),
                         layers=False
                     )
-                    # download_sketch = gr.Button(
-                    #     "Download sketch", scale=1, elem_id="download_sketch"
-                    # )
+                    download_sketch = gr.Button(
+                        "Download sketch", scale=1, elem_id="download_sketch"
+                    )
                     gr.HTML(
                         """
                     <div class="button-row">
@@ -101,7 +101,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                 api_name=False,
             )
             inputs = [image, prompt, prompt_temp, style, seed, val_r, half_model, model_options]
-            outputs = [result]
+            outputs = [result, download_sketch]
             prompt.submit(fn=self.artwork, inputs=inputs, outputs=outputs, api_name=False)
             style.change(
                 lambda x: self.styles[x],
