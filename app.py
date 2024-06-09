@@ -50,8 +50,8 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                     gr.Markdown("## IMAGE GENERATE", elem_id="output_header")
                     result = gr.Image(
                         label="Result",
-                        height=440,
-                        width=440,
+                        height=512,
+                        width=512,
                         elem_id="output_image",
                         show_label=False,
                         show_download_button=True,

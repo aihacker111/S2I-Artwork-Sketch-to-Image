@@ -57,7 +57,7 @@ class Sketch2ImageController(Sketch2Image):
 
     def artwork(self, image, prompt, prompt_template, style_name, seed, val_r, faster, model_name):
         # Handle case where both images are None
-        if image is None:
+        if image["composite"] is None:
             ones = Image.new("L", (512, 512), 255)
             temp_uri = self.pil_image_to_data_uri(ones)
             return ones, self.gr.update(link=temp_uri)
