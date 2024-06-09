@@ -12,26 +12,22 @@ class Sketch2ImageLaunch(Sketch2ImageController):
 
     def launch(self):
         with gr.Blocks(css=css) as demo:
-            line = gr.Checkbox(label="line", value=False, elem_id="cb-line")
-            eraser = gr.Checkbox(label="eraser", value=False, elem_id="cb-eraser")
             with gr.Row(elem_id="main_row"):
                 with gr.Column(elem_id="column_input"):
                     gr.Markdown("## SKETCH", elem_id="input_header")
-                    image = gr.Image(
-                        source="canvas",
-                        tool="color-sketch",
+                    image = gr.Sketchpad(
                         type="pil",
-                        image_mode="L",
-                        invert_colors=True,
-                        shape=(512, 512),
-                        brush_radius=4,
-                        height=440,
-                        width=440,
-                        brush_color="#000000",
-                        interactive=True,
-                        show_download_button=True,
-                        elem_id="input_image",
+                        height=512,
+                        width=512,
+                        min_width=512,
+                        image_mode="RGBA",
                         show_label=False,
+                        mirror_webcam=False,
+                        show_download_button=True,
+                        elem_id='input_image',
+                        brush=gr.Brush(colors=["#000000"], color_mode="fixed", default_size=4),
+                        canvas_size=(1024, 1024),
+                        layers=False
                     )
                     download_sketch = gr.Button(
                         "Download sketch", scale=1, elem_id="download_sketch"
@@ -54,8 +50,8 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                     gr.Markdown("## IMAGE GENERATE", elem_id="output_header")
                     result = gr.Image(
                         label="Result",
-                        height=440,
-                        width=440,
+                        height=512,
+                        width=512,
                         elem_id="output_image",
                         show_label=False,
                         show_download_button=True,
@@ -96,22 +92,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                         seed = gr.Textbox(label="Seed", value='42', scale=1, min_width=50)
                         randomize_seed = gr.Button(value='\U0001F3B2')
                     download_output = gr.Button("Download output", elem_id="download_output")
-
-            eraser.change(
-                fn=lambda x: gr.update(value=not x),
-                inputs=[eraser],
-                outputs=[line],
-                queue=False,
-                api_name=False,
-            ).then(self.update_canvas, [line, eraser], [image])
-            line.change(
-                fn=lambda x: gr.update(value=not x),
-                inputs=[line],
-                outputs=[eraser],
-                queue=False,
-                api_name=False,
-            ).then(self.update_canvas, [line, eraser], [image])
-            demo.load(None, None, None, _js=scripts)
+            demo.load(None, None, None, js=scripts)
             randomize_seed.click(
                 lambda x: random.randint(0, self.MAX_SEED),
                 inputs=[],
