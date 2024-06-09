@@ -29,9 +29,9 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                         canvas_size=(1024, 1024),
                         layers=False
                     )
-                    download_sketch = gr.Button(
-                        "Download sketch", scale=1, elem_id="download_sketch"
-                    )
+                    # download_sketch = gr.Button(
+                    #     "Download sketch", scale=1, elem_id="download_sketch"
+                    # )
                     gr.HTML(
                         """
                     <div class="button-row">
@@ -50,8 +50,8 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                     gr.Markdown("## IMAGE GENERATE", elem_id="output_header")
                     result = gr.Image(
                         label="Result",
-                        height=512,
-                        width=512,
+                        height=440,
+                        width=440,
                         elem_id="output_image",
                         show_label=False,
                         show_download_button=True,
@@ -91,7 +91,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                             interactive=True)
                         seed = gr.Textbox(label="Seed", value='42', scale=1, min_width=50)
                         randomize_seed = gr.Button(value='\U0001F3B2')
-                    download_output = gr.Button("Download output", elem_id="download_output")
+                    # download_output = gr.Button("Download output", elem_id="download_output")
             demo.load(None, None, None, js=scripts)
             randomize_seed.click(
                 lambda x: random.randint(0, self.MAX_SEED),
@@ -101,7 +101,7 @@ class Sketch2ImageLaunch(Sketch2ImageController):
                 api_name=False,
             )
             inputs = [image, prompt, prompt_temp, style, seed, val_r, half_model, model_options]
-            outputs = [result, download_sketch, download_output]
+            outputs = [result]
             prompt.submit(fn=self.artwork, inputs=inputs, outputs=outputs, api_name=False)
             style.change(
                 lambda x: self.styles[x],
