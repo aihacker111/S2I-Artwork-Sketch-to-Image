@@ -43,7 +43,7 @@ class Sketch2ImagePipeline(PrimaryModel):
             torch.cuda.empty_cache()
             gc.collect()
 
-            return output_image
+        return output_image
 
     def _generate_full_precision(self, c_t, prompt, prompt_tokens, r, noise_map):
         caption_enc = self._get_caption_enc(prompt, prompt_tokens)

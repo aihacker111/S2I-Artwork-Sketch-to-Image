@@ -5,12 +5,12 @@ from transformers import AutoTokenizer, CLIPTextModel
 from diffusers import AutoencoderKL, UNet2DConditionModel
 from peft import LoraConfig
 from S2I.modules.utils import sc_vae_encoder_fwd, sc_vae_decoder_fwd, download_models, get_model_path
-
+import spaces
 
 class RelationShipConvolution(torch.nn.Module):
     def __init__(self, conv_in_pretrained, conv_in_curr, r):
         super(RelationShipConvolution, self).__init__()
-        self.conv_in_pretrained = copy.deepcopy(conv_in_pretrained)
+        self.conv_in_pretrained = copy.deepcopy(conv_in_pretrained).eval()
         self.conv_in_curr = copy.deepcopy(conv_in_curr)
         self.r = r
 

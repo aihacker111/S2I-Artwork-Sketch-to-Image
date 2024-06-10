@@ -4,9 +4,10 @@ import numpy as np
 import base64
 import torch
 import torchvision.transforms.functional as F
+from S2I import Sketch2ImagePipeline
 
 
-class Sketch2ImageController:
+class Sketch2ImageController():
     def __init__(self, gr):
         super().__init__()
         self.gr = gr
@@ -37,6 +38,11 @@ class Sketch2ImageController:
 
         # Initialize the model once here
         # self.model = Sketch2Image()
+        self.pipe = None
+
+    def load_pipeline(self):
+        if self.pipe is None:
+            self.pipe = Sketch2ImagePipeline()
 
     def update_canvas(self, use_line, use_eraser):
         brush_size = 20 if use_eraser else 4
@@ -54,7 +60,8 @@ class Sketch2ImageController:
         img_str = base64.b64encode(buffered.getvalue()).decode()
         return f"data:image/{format.lower()};base64,{img_str}"
 
-    def artwork(self, pipeline, image, prompt, prompt_template, style_name, seed, val_r, faster, model_name):
+    def artwork(self, image, prompt, prompt_template, style_name, seed, val_r, faster, model_name):
+        self.load_pipeline()
         # Handle case where both images are None
         if image is None:
             ones = Image.new("L", (512, 512), 255)
@@ -64,7 +71,6 @@ class Sketch2ImageController:
         prompt = prompt_template.replace("{prompt}", prompt)
         img = Image.fromarray(np.array(image["composite"])[:, :, -1])
         img = img.convert("RGB")
-        img.save('a.png')
         img = img.resize((512, 512))
         image_t = F.to_tensor(img) > 0.5
 
@@ -75,8 +81,8 @@ class Sketch2ImageController:
         noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
 
         with torch.no_grad():
-            output_image = pipeline.generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster,
-                                         model_name=model_name)
+            output_image = Sketch2ImagePipeline().generate(c_t, prompt, r=val_r, noise_map=noise, half_model=faster,
+                                                           model_name=model_name)
 
         output_pil = F.to_pil_image(output_image[0].cpu() * 0.5 + 0.5)
         input_sketch_uri = self.pil_image_to_data_uri(Image.fromarray(255 - np.array(img)))
